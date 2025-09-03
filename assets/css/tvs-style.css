@@ -1,0 +1,49 @@
+/* assets/css/tvs-style.css */
+.tvs-stats-wrapper {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: #121212;       /* dark background */
+    padding: 30px 0;
+    border-radius: 12px;
+    max-width: 900px;
+    margin: 30px auto;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    font-family: 'Segoe UI', sans-serif;
+    color: #fff;
+}
+
+.tvs-stat {
+    text-align: center;
+    flex: 1;
+    transition: transform 0.3s ease;
+}
+
+.tvs-stat:hover {
+    transform: scale(1.05);
+}
+
+.tvs-value {
+    font-size: 2.5em;
+    font-weight: 700;
+    color: #ff3b3f;               /* Twitch red accent */
+    margin-bottom: 8px;
+}
+
+.tvs-label {
+    font-size: 0.95em;
+    color: #ccc;
+}
+
+/* LIVE badge */
+.tvs-live {
+    display: inline-block;
+    background-color: #e91916;   /* Twitch red */
+    color: #fff;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    margin-left: 6px;
+    vertical-align: middle;
+}
