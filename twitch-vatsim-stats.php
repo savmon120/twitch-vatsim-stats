@@ -4,7 +4,7 @@ Plugin Name: Twitch + VATSIM Stats (OAuth)
 Plugin URI: https://example.com
 Description: Displays Twitch followers, subscribers, Twitch live status, and your VATSIM pilot/controller hours via shortcode [twitch_vatsim_stats]. Includes built-in Twitch OAuth (user token + refresh).
 Version: 3.0.0
-Author: Your Name
+Author: Sav Monzac
 Author URI: https://example.com
 License: GPL2
 */
