@@ -1,5 +1,5 @@
 === Twitch + VATSIM Stats ===
-Contributors: Sav Monzac
+Contributors: Sav
 Tags: twitch, vatsim, followers, subscribers, hours, streaming
 Requires at least: 5.0
 Tested up to: 6.6
