@@ -352,69 +352,75 @@ private function fetch_vatsim_hours($cid, $debug = false) {
     return [$pilot_hours, $controller_hours, $raw];
 }
 
-    /* -----------------------------
-     * Shortcode
-     * --------------------------- */
-    function render_shortcode() {
-        $s = $this->get_settings();
-        if (empty($s['client_id']) || empty($s['client_secret'])) return "<p><em>Please configure Client ID/Secret in Settings → Twitch + VATSIM Stats.</em></p>";
-        if (empty($s['access_token']) || empty($s['user_id'])) {
-            $connect_url = admin_url('options-general.php?page=tvs-settings');
-            return "<p><em>Not connected to Twitch. <a href='".esc_url($connect_url)."'>Connect now</a>.</em></p>";
-        }
+/* -----------------------------
+ * Shortcode
+ * --------------------------- */
+function render_shortcode($atts = []) {
+    $atts = shortcode_atts([
+        'class' => '' // allow user to pass extra classes
+    ], $atts);
 
-        $this->refresh_token_if_needed($s);
-
-        // Twitch followers/subs
-        $followers_resp = $this->api_get('https://api.twitch.tv/helix/channels/followers', $s['access_token'], $s['client_id'], ['broadcaster_id'=>$s['user_id']]);
-        $subs_resp = $this->api_get('https://api.twitch.tv/helix/subscriptions', $s['access_token'], $s['client_id'], ['broadcaster_id'=>$s['user_id']]);
-        $followers_total = $followers_resp['body']['total'] ?? 0;
-        $subs_total = isset($subs_resp['body']['total']) ? intval($subs_resp['body']['total']) : (isset($subs_resp['body']['data']) ? count($subs_resp['body']['data']) : 0);
-
-        // Twitch live status
-        $live_resp = $this->api_get('https://api.twitch.tv/helix/streams', $s['access_token'], $s['client_id'], ['user_id'=>$s['user_id']]);
-        $is_live = !empty($live_resp['body']['data']);
-
-        // VATSIM hours (stats API) + fallback addition
-        list($pilot_hours, $controller_hours, $vatsim_raw) = $this->fetch_vatsim_hours($s['vatsim_cid'] ?? 0, !empty($s['debug']));
-
-        // Add fallback values
-        $pilot_hours += intval($s['fallback_pilot_hours'] ?? 0);
-        $controller_hours += intval($s['fallback_controller_hours'] ?? 0);
-
-        // Output
-        $out = "<div class='tvs-stats-wrapper'>
-            <div class='tvs-stat'>
-                <div class='tvs-value'>".esc_html($followers_total)."</div>
-                <div class='tvs-label'>Twitch Followers".($is_live ? " <span class='tvs-live'>LIVE</span>" : "")."</div>
-            </div>
-            <div class='tvs-stat'>
-                <div class='tvs-value'>".esc_html($subs_total)."</div>
-                <div class='tvs-label'>Twitch Subscribers</div>
-            </div>
-            <div class='tvs-stat'>
-                <div class='tvs-value'>".esc_html($pilot_hours)."</div>
-                <div class='tvs-label'>Pilot Hours</div>
-            </div>
-            <div class='tvs-stat'>
-                <div class='tvs-value'>".esc_html($controller_hours)."</div>
-                <div class='tvs-label'>Controller Hours</div>
-            </div>
-        </div>";
-
-        if (!empty($s['debug'])) {
-            $dbg = [
-                'followers_resp'=>$followers_resp,
-                'subs_resp'=>$subs_resp,
-                'live_resp'=>$live_resp,
-                'vatsim_cid'=>$s['vatsim_cid'],
-                'vatsim_raw'=>$vatsim_raw,
-            ];
-            $out .= "<pre style='background:#111;color:#0f0;padding:10px;overflow:auto;max-height:400px;white-space:pre-wrap;'>DEBUG:\n".esc_html(print_r($dbg,true))."</pre>";
-        }
-
-        return $out;
+    $s = $this->get_settings();
+    if (empty($s['client_id']) || empty($s['client_secret'])) {
+        return "<p><em>Please configure Client ID/Secret in Settings → Twitch + VATSIM Stats.</em></p>";
     }
+    if (empty($s['access_token']) || empty($s['user_id'])) {
+        $connect_url = admin_url('options-general.php?page=tvs-settings');
+        return "<p><em>Not connected to Twitch. <a href='".esc_url($connect_url)."'>Connect now</a>.</em></p>";
+    }
+
+    $this->refresh_token_if_needed($s);
+
+    // Twitch followers/subs
+    $followers_resp = $this->api_get('https://api.twitch.tv/helix/channels/followers', $s['access_token'], $s['client_id'], ['broadcaster_id'=>$s['user_id']]);
+    $subs_resp = $this->api_get('https://api.twitch.tv/helix/subscriptions', $s['access_token'], $s['client_id'], ['broadcaster_id'=>$s['user_id']]);
+    $followers_total = $followers_resp['body']['total'] ?? 0;
+    $subs_total = isset($subs_resp['body']['total']) ? intval($subs_resp['body']['total']) : (isset($subs_resp['body']['data']) ? count($subs_resp['body']['data']) : 0);
+
+    // Twitch live status
+    $live_resp = $this->api_get('https://api.twitch.tv/helix/streams', $s['access_token'], $s['client_id'], ['user_id'=>$s['user_id']]);
+    $is_live = !empty($live_resp['body']['data']);
+
+    // VATSIM hours (stats API) + fallback addition
+    list($pilot_hours, $controller_hours, $vatsim_raw) = $this->fetch_vatsim_hours($s['vatsim_cid'] ?? 0, !empty($s['debug']));
+
+    // Add fallback values
+    $pilot_hours += intval($s['fallback_pilot_hours'] ?? 0);
+    $controller_hours += intval($s['fallback_controller_hours'] ?? 0);
+
+    // Output
+    $out = "<div class='tvs-stats-wrapper ".esc_attr($atts['class'])."'>
+        <div class='tvs-stat'>
+            <div class='tvs-value'>".esc_html($followers_total)."</div>
+            <div class='tvs-label'>Twitch Followers".($is_live ? " <span class='tvs-live'>LIVE</span>" : "")."</div>
+        </div>
+        <div class='tvs-stat'>
+            <div class='tvs-value'>".esc_html($subs_total)."</div>
+            <div class='tvs-label'>Twitch Subscribers</div>
+        </div>
+        <div class='tvs-stat'>
+            <div class='tvs-value'>".esc_html($pilot_hours)."</div>
+            <div class='tvs-label'>Pilot Hours</div>
+        </div>
+        <div class='tvs-stat'>
+            <div class='tvs-value'>".esc_html($controller_hours)."</div>
+            <div class='tvs-label'>Controller Hours</div>
+        </div>
+    </div>";
+
+    if (!empty($s['debug'])) {
+        $dbg = [
+            'followers_resp'=>$followers_resp,
+            'subs_resp'=>$subs_resp,
+            'live_resp'=>$live_resp,
+            'vatsim_cid'=>$s['vatsim_cid'],
+            'vatsim_raw'=>$vatsim_raw,
+        ];
+        $out .= "<pre style='background:#111;color:#0f0;padding:10px;overflow:auto;max-height:400px;white-space:pre-wrap;'>DEBUG:\n".esc_html(print_r($dbg,true))."</pre>";
+    }
+
+    return $out;
+}
 }
 
 new TwitchVatsimStatsOAuth();
